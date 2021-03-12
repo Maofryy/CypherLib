@@ -3,6 +3,43 @@
 
 import sys
 import os
+import traceback
+import string
+
+def rot(c, nb):
+    ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    alpha = "abcdefghijklmnopqrstuvwxyz"
+    ALPHA_rot = ALPHA[nb:] + ALPHA[:nb]
+    alpha_rot = alpha[nb:] + alpha[:nb]
+    for i in range(len(alpha)):
+       if c == ALPHA[i]:
+           return ALPHA_rot[i]
+       if c == alpha[i]:
+           return alpha_rot[i]
+    return (c)
+
+
+def encode_letter(p, *args):
+    # Encoding method
+    c = rot(p, int(args[0]))
+    return (c)
+
+def decode_letter(c, *args):
+    # Decoding method
+    p = rot(c, -int(args[0]))
+    return (p)
+
+def encode(plaintext, *args):
+    cyphertext = ""
+    for p in plaintext:
+        cyphertext += encode_letter(p, *args)
+    return (cyphertext)
+
+def decode(cyphertext, *args):
+    plaintext = ""
+    for c in cyphertext:
+        plaintext += decode_letter(c, *args)
+    return (plaintext)
 
 def print_usage(msg=None):
     print("\nusage: prog.py -e plaintext [<cypher_arg1> <cypher_arg2> ... <cypher_argn>]")
@@ -39,16 +76,26 @@ if __name__ == "__main__":
             with open(sys.argv[i+2], 'r') as f:
                 plaintext = f.read()
             #Choose encoder
-            # function = 
+            function = encode
             text = plaintext
         if (arg == '-d' or arg == '--decode') and i == 0:
             with open(sys.argv[i+2], 'r') as f:
                 cyphertext = f.read()
-            # decode = 
+            function = decode
             text = cyphertext
         elif i>1:
             args.append(arg)
     try:
-        function(text, *args)
-    except TypeError:
+        output_text = function(text, *args)
+    except (TypeError, IndexError):
+        traceback.print_exc()
         print_usage("Wrong number of arguments.")
+    
+    if function == encode:
+        print(output_text)
+        with open("cypher_caesar.txt", 'w') as f:
+            f.write(output_text)
+    elif function == decode:
+        print(output_text)
+        with open("plain_caesar.txt", 'w') as f:
+            f.write(output_text)
