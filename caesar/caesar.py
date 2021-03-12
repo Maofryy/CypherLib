@@ -4,7 +4,7 @@
 import sys
 import os
 import traceback
-import string
+import collections
 
 def rot(c, nb):
     ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -18,6 +18,13 @@ def rot(c, nb):
            return alpha_rot[i]
     return (c)
 
+def crack(cyphertext):
+    most_freq = collections.Counter(cyphertext.replace(" ", "")).most_common(1)
+    key = ord(most_freq[0][0]) - ord('e')
+    
+    plaintext = decode(cyphertext, key)
+
+    return (plaintext, key)
 
 def encode_letter(p, *args):
     # Encoding method
@@ -44,10 +51,12 @@ def decode(cyphertext, *args):
 def print_usage(msg=None):
     print("\nusage: prog.py -e plaintext [<cypher_arg1> <cypher_arg2> ... <cypher_argn>]")
     print("usage: prog.py -d cyphertext [<cypher_arg1> <cypher_arg2> ... <cypher_argn>]")
+    print("usage: prog.py -c [<cypher_arg1> <cypher_arg2> ... <cypher_argn>]")
     print("usage: prog.py [-h, --help]\n")
     print("Arguments descriptions")
     print("     -e, --encode :      Encoding plaintext to cyphertext using the program selected")
     print("     -d, --decode :      Decoding cyphertext to plaintext using the program selected")
+    print("     -c, --crack :       Cracking cyphertext to plaintext using statistical attack")
     print("     <cypher_arg> :      Args passed to cypher program, key or passphrase, etc...")
     print("     -h, --help:         Printing this usage message")
     if not isinstance(msg, type(None)):
@@ -60,7 +69,7 @@ if __name__ == "__main__":
         print_usage("Error: not enough arguments were passed.\nPlease refer to the usage printed.")
     
     #* Check for method used and passing arguments from main to encoding or decoding functions
-    #Checking if text file exists or can be opened ?
+    #Checking if text file exists or can be opened ? without the command
     if not (os.path.exists(sys.argv[2]) and os.access(sys.argv[2], os.R_OK)):
         print_usage("Error: plaintext of cyphertext file is inaccessible.")
     
@@ -83,6 +92,11 @@ if __name__ == "__main__":
                 cyphertext = f.read()
             function = decode
             text = cyphertext
+        if (arg == '-c' or arg == '--crack') and i == 0:
+            with open(sys.argv[i+2], 'r') as f:
+                cyphertext = f.read()
+            function = crack
+            text = cyphertext
         elif i>1:
             args.append(arg)
     try:
@@ -99,3 +113,7 @@ if __name__ == "__main__":
         print(output_text)
         with open("plain_caesar.txt", 'w') as f:
             f.write(output_text)
+    elif function == crack:
+        print(output_text)
+        with open("crack_caesar.txt", 'w') as f:
+            f.write(output_text[0])
